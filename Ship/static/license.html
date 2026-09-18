@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>License</title>
+</head>
+<body>
+  <button id="add-license">Add license</button>
+  <button id="show-license" hidden>Show license</button>
+  <button id="delete-license" hidden>Delete license</button>
+  <button id="authenticate" hidden>Authenticate</button>
+
+  <section id="scanner-panel" hidden>
+    <video id="scanner-video" playsinline muted></video>
+    <button id="camera-control" class="ghost">Stop scan / Change camera</button>
+  </section>
+
+  <div id="license-qr" hidden></div>
+  <p id="status"></p>
+
+  <script src="js/qrcode.js"></script>
+  <script src="js/qrcode_UTF8.js"></script>
+  <script src="js/jsQR.js"></script>
+  <script type="module">
+    import { generateQR } from './js/qr/qr-generator.js';
+    import { QRScanner } from './js/qr/qr-scanner.js';
+
+    const addBtn = document.getElementById('add-license');
+    const showBtn = document.getElementById('show-license');
+    const delBtn = document.getElementById('delete-license');
+    const authBtn = document.getElementById('authenticate');
+    const scannerPanel = document.getElementById('scanner-panel');
+    const scannerVideo = document.getElementById('scanner-video');
+    const cameraControl = document.getElementById('camera-control');
+    const licenseQr = document.getElementById('license-qr');
+    const statusEl = document.getElementById('status');
+
+    let scanner = null;
+    let nextIndex = 0;
+
+    function setStatus(msg) {
+        statusEl.textContent = msg;
+    }
+
+    // On page load: GET /haslicense
+    fetch('/haslicense')
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.status === true) {
+                addBtn.hidden = true;
+                authBtn.hidden = false;
+                showBtn.hidden = false;
+                delBtn.hidden = false;
+                licenseQr.innerHTML = '';
+                licenseQr.hidden = true;
+                setStatus('Ready.');
+            } else {
+                throw new Error('No license');
+            }
+        })
+        .catch(err => {
+            addBtn.hidden = false;
+            authBtn.hidden = true;
+            showBtn.hidden = true;
+            delBtn.hidden = true;
+            licenseQr.hidden = true;
+            setStatus('No license.');
+        });
+
+    addBtn.addEventListener('click', () => {
+        scannerPanel.hidden = false;
+        if (!scanner) {
+            scanner = new QRScanner({
+                video: scannerVideo,
+                onResult: ({ data }) => {
+                    try {
+                        const parsed = JSON.parse(data);
+                        scanner.stop();
+                        scannerPanel.hidden = true;
+                        fetch('/savelicense', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(parsed)
+                        }).finally(() => {
+                            location.reload();
+                        });
+                    } catch (e) {
+                        setStatus('That code is not JSON — still scanning…');
+                    }
+                },
+                onError: (e) => {
+                    setStatus('Scanner error: ' + e.message);
+                }
+            });
+        }
+        scanner.start();
+    });
+
+    cameraControl.addEventListener('click', async () => {
+        if (window.confirm('Switch to different camera?')) {
+            if (scanner && scanner.availableCameras.length > 0) {
+                nextIndex = (nextIndex + 1) % scanner.availableCameras.length;
+                await scanner.start(scanner.availableCameras[nextIndex].deviceId);
+            }
+        } else {
+            if (scanner) {
+                scanner.stop();
+            }
+            scannerPanel.hidden = true;
+            setStatus('Scanner stopped.');
+        }
+    });
+
+    delBtn.addEventListener('click', () => {
+        if (window.confirm('Delete license?')) {
+            fetch('/deletelicense', { method: 'POST' })
+                .finally(() => {
+                    location.reload();
+                });
+        }
+    });
+
+    showBtn.addEventListener('click', () => {
+        fetch('/getlicense')
+            .then(res => res.json())
+            .then(data => {
+                try {
+                    const qr = generateQR(JSON.stringify(data), { errorCorrection: 'M', cellSize: 6, margin: 2 });
+                    licenseQr.innerHTML = '';
+                    licenseQr.appendChild(qr.createImageElement());
+                    licenseQr.hidden = false;
+                } catch(e) {
+                    setStatus(e.message);
+                }
+            })
+            .catch(e => {
+                setStatus('Failed to get license.');
+            });
+    });
+
+    authBtn.addEventListener('click', () => {
+        location.href = 'auth.html';
+    });
+
+    window.addEventListener('pagehide', () => {
+        if (scanner) {
+            scanner.stop();
+            scanner.destroy();
+        }
+    });
+  </script>
+</body>
+</html>
