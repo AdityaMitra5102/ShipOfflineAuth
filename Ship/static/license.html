@@ -2,21 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>License</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ship &mdash; License</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Crect width='9' height='9' fill='%230b1b3a'/%3E%3Cg fill='%23fff'%3E%3Cpath d='M1 1h3v3H1z M5 1h3v3H5z M1 5h3v3H1z'/%3E%3C/g%3E%3Cg fill='%230b1b3a'%3E%3Cpath d='M2 2h1v1H2z M6 2h1v1H6z M2 6h1v1H2z'/%3E%3C/g%3E%3Crect x='5' y='5' width='1' height='1' fill='%23fff'/%3E%3Crect x='7' y='7' width='1' height='1' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <button id="add-license">Add license</button>
-  <button id="show-license" hidden>Show license</button>
-  <button id="delete-license" hidden>Delete license</button>
-  <button id="authenticate" hidden>Authenticate</button>
+  <header class="app-header">
+    <h1>Ship License</h1>
+    <p class="subtitle">Store &amp; present the port authority credential</p>
+  </header>
 
-  <section id="scanner-panel" hidden>
-    <video id="scanner-video" playsinline muted></video>
-    <button id="camera-control" class="ghost">Stop scan / Change camera</button>
-  </section>
+  <main>
+    <section class="card">
+      <div class="actions">
+        <button id="add-license">Add license</button>
+        <button id="authenticate" hidden>Authenticate</button>
+        <button id="show-license" class="ghost" hidden>Show license</button>
+        <button id="delete-license" class="danger" hidden>Delete license</button>
+      </div>
+      <p id="status" class="status"></p>
+      <div id="license-qr" class="qr-box" hidden></div>
+    </section>
 
-  <div id="license-qr" hidden></div>
-  <p id="status"></p>
+    <section id="scanner-panel" class="card" hidden>
+      <h2>Scan the license</h2>
+      <div class="video-box">
+        <video id="scanner-video" playsinline muted></video>
+      </div>
+      <button id="camera-control" class="ghost">Stop scan / Change camera</button>
+    </section>
+  </main>
 
   <script src="js/qrcode.js"></script>
   <script src="js/qrcode_UTF8.js"></script>
