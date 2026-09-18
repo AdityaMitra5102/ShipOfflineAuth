@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Auth</title>
+    <script type="module">
+    import {
+        get,
+        parseRequestOptionsFromJSON,
+    } from '/webauthn-json.browser-ponyfill.js';
+
+    async function start(data) {
+    
+      let request = await fetch('/api/authenticate/begin', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({'data': data}),
+      });
+      if(!request.ok) {
+        throw new Error('No credential available to authenticate!');
+      }
+      let json = await request.json();
+      let options = parseRequestOptionsFromJSON(json);
+
+      let response = await get(options);
+      let completeRequest = await fetch('/api/authenticate/complete', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+	body: JSON.stringify(response),
+      });
+
+      let completeJson = await completeRequest.json();
+      document.getElementById('result').textContent = JSON.stringify(completeJson, null, 2);
+    }
+
+    window.start = start;
+  </script>
+</head>
+<body>
+  <button id="start-scan">Start scanning</button>
+  <div id="inputdiv"></div>
+  <div id="result"></div>
+  <div id="result-qr" hidden></div>
+  <button id="manage-license">Manage license</button>
+  <p id="status"></p>
+
+  <section id="scanner-panel" hidden>
+    <video id="scanner-video" playsinline muted></video>
+    <button id="camera-control" class="ghost">Stop scan / Change camera</button>
+  </section>
+
+  <script src="js/qrcode.js"></script>
+  <script src="js/qrcode_UTF8.js"></script>
+  <script src="js/jsQR.js"></script>
+  <script type="module">
+    import { generateQR } from './js/qr/qr-generator.js';
+    import { QRScanner } from './js/qr/qr-scanner.js';
+
+    const startScanBtn = document.getElementById('start-scan');
+    const inputdiv = document.getElementById('inputdiv');
+    const result = document.getElementById('result');
+    const resultQr = document.getElementById('result-qr');
+    const manageLicenseBtn = document.getElementById('manage-license');
+    const statusEl = document.getElementById('status');
+    const scannerPanel = document.getElementById('scanner-panel');
+    const scannerVideo = document.getElementById('scanner-video');
+    const cameraControl = document.getElementById('camera-control');
+
+    let scanner = null;
+    let nextIndex = 0;
+
+    function setStatus(msg) {
+        statusEl.textContent = msg;
+    }
+
+    startScanBtn.addEventListener('click', () => {
+        scannerPanel.hidden = false;
+        if (!scanner) {
+            scanner = new QRScanner({
+                video: scannerVideo,
+                onResult: ({ data }) => {
+                    inputdiv.innerText = data;
+                    scanner.destroy();
+                    scannerPanel.hidden = true;
+                    window.start(data);
+                },
+                onError: (e) => {
+                    setStatus('Scanner error: ' + e.message);
+                }
+            });
+        }
+        scanner.start();
+    });
+
+    cameraControl.addEventListener('click', async () => {
+        if (window.confirm('Switch to different camera?')) {
+            if (scanner && scanner.availableCameras.length > 0) {
+                nextIndex = (nextIndex + 1) % scanner.availableCameras.length;
+                await scanner.start(scanner.availableCameras[nextIndex].deviceId);
+            }
+        } else {
+            if (scanner) {
+                scanner.stop();
+            }
+            scannerPanel.hidden = true;
+            setStatus('Scanner stopped.');
+        }
+    });
+
+    let lastText = null;
+    const observer = new MutationObserver(() => {
+        const text = result.textContent;
+        if (text && text !== lastText) {
+            lastText = text;
+            try {
+                const qr = generateQR(text, { errorCorrection: 'M', cellSize: 6, margin: 2 });
+                resultQr.innerHTML = '';
+                resultQr.appendChild(qr.createImageElement());
+                resultQr.hidden = false;
+            } catch (e) {
+                setStatus('QR generation failed: ' + e.message);
+            }
+        }
+    });
+    observer.observe(result, { childList: true, characterData: true, subtree: true });
+
+    manageLicenseBtn.addEventListener('click', () => {
+        location.href = 'license.html';
+    });
+
+    window.addEventListener('pagehide', () => {
+        if (scanner) {
+            scanner.stop();
+            scanner.destroy();
+        }
+    });
+  </script>
+</body>
+</html>
