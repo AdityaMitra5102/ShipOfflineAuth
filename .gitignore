@@ -1,0 +1,27 @@
+# Python cache directories
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Data files
+*.json
+*.csv
+
+# Certificate and key files
+*.pem
+*.der
+
+# IDE and editor directories
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Virtual environments
+venv/
+env/
+.env
