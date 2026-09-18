@@ -8,6 +8,7 @@ from datetime import datetime
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization
 import base64
+from db import *
 
 app = Flask(__name__, static_url_path="")
 app.secret_key = os.urandom(32)
@@ -91,7 +92,7 @@ def register_complete():
 		"verifiableCredential": jws_token
 	}
 	
-	# TODO: Save to DB: vcredential
+	add_to_db(vcredential)
 	
 	resp = jsonify(presentation)
 	return resp
@@ -99,6 +100,14 @@ def register_complete():
 @app.route("/")
 def index():
 	return redirect("register.html")
+	
+@app.route("/api/ships")
+def api_ships():
+	return show_all()
+	
+@app.route("/db")
+def db_page():
+	return redirect("db.html")
 	
 if __name__=='__main__':
 	app.run(host="0.0.0.0", port=5000)

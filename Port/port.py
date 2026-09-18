@@ -6,6 +6,7 @@ import base64
 import json
 from jose import jws
 from datetime import datetime
+from db import *
 
 app = Flask(__name__, static_url_path="")
 app.secret_key = os.urandom(32)
@@ -53,12 +54,22 @@ def authenticate_complete():
 	resp = {"status": "success", "ship": ship_id}
 	
 	# TODO: Add to DB resp
+	add_to_db(resp)
 	
 	return jsonify(resp)
 	
 @app.route("/")
 def index():
 	return redirect("index.html")
+	
+@app.route("/api/ships")
+def api_ships():
+	return show_all()
+	
+@app.route("/db")
+def db_page():
+	return redirect("db.html")
+
 	
 		
 if __name__=='__main__':
