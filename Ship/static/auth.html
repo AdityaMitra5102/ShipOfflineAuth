@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Auth</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ship &mdash; Authentication</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Crect width='9' height='9' fill='%230b1b3a'/%3E%3Cg fill='%23fff'%3E%3Cpath d='M1 1h3v3H1z M5 1h3v3H5z M1 5h3v3H1z'/%3E%3C/g%3E%3Cg fill='%230b1b3a'%3E%3Cpath d='M2 2h1v1H2z M6 2h1v1H6z M2 6h1v1H2z'/%3E%3C/g%3E%3Crect x='5' y='5' width='1' height='1' fill='%23fff'/%3E%3Crect x='7' y='7' width='1' height='1' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
     <script type="module">
     import {
         get,
@@ -37,17 +40,36 @@
   </script>
 </head>
 <body>
-  <button id="start-scan">Start scanning</button>
-  <div id="inputdiv"></div>
-  <div id="result"></div>
-  <div id="result-qr" hidden></div>
-  <button id="manage-license">Manage license</button>
-  <p id="status"></p>
+  <header class="app-header">
+    <h1>Ship Authentication</h1>
+    <p class="subtitle">Scan the port challenge &amp; show the response</p>
+  </header>
 
-  <section id="scanner-panel" hidden>
-    <video id="scanner-video" playsinline muted></video>
-    <button id="camera-control" class="ghost">Stop scan / Change camera</button>
-  </section>
+  <main>
+    <section class="card">
+      <div class="actions">
+        <button id="start-scan">Start scanning</button>
+        <button id="manage-license" class="ghost">Manage license</button>
+      </div>
+      <p id="status" class="status"></p>
+    </section>
+
+    <section id="scanner-panel" class="card" hidden>
+      <h2>Scan the challenge</h2>
+      <div class="video-box">
+        <video id="scanner-video" playsinline muted></video>
+      </div>
+      <button id="camera-control" class="ghost">Stop scan / Change camera</button>
+    </section>
+
+    <section class="card">
+      <h2>Response</h2>
+      <div id="result-qr" class="qr-box" hidden></div>
+      <div id="inputdiv" class="detail"></div>
+      <div id="result" class="detail"></div>
+      <p class="hint">Scanned challenge and signed response appear here.</p>
+    </section>
+  </main>
 
   <script src="js/qrcode.js"></script>
   <script src="js/qrcode_UTF8.js"></script>
