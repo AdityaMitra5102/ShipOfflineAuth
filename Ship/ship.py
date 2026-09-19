@@ -58,7 +58,7 @@ def authenticate_begin():
 def authenticate_complete():
 	response = request.json
 	license = get_license()
-	return jsonify({"presentation": license, "authresp": response})
+	return jsonify({"presentation": license, "assertion": response})
 	
 @app.route("/")
 def index():

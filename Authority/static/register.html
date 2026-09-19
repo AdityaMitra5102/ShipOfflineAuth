@@ -14,7 +14,7 @@
     } from '/webauthn-json.browser-ponyfill.js';
 
     async function start() {
-      const shipInput = document.getElementById('ship').value;
+      const shipInput = document.getElementById('ship').value.trim();
       
       let request = await fetch('/api/register/begin', {
         method: 'POST',
@@ -77,14 +77,9 @@
 
             <div id="qr-container" class="qr-container"></div>
 
-            <!-- The QR payload. Editable: any change re-renders the code. -->
-            <div id="result" class="token" contenteditable="plaintext-only"
+            <div id="result" class="token"
                  spellcheck="false" role="textbox" aria-multiline="false"
-                 aria-label="Credential value (editable)"></div>
-
-            <p class="hint no-print">
-                Editable &mdash; the QR code follows this value as you type.
-            </p>
+                 aria-label="License VC"></div>
 
             <button type="button" id="qr-print" class="no-print">
                 Print credential
@@ -97,27 +92,5 @@
     <script src="js/qrcode_UTF8.js"></script>
     <script src="js/app.js"></script>
 
-    <!-- ===============================================================
-         YOUR start(). app.js does not define it: it only renders
-         whatever lands in #result. Put the value there and the QR
-         appears. Replace the body of this function with your own
-         lookup, signing, database call - whatever the credential is.
-         =============================================================== -->
-    <script>
-        window.start = function () {
-            const shipId = document.getElementById('ship').value.trim();
-            const error = document.getElementById('error');
-
-            if (!shipId) {
-                error.textContent = 'Enter a Ship ID first.';
-                error.hidden = false;
-                return;
-            }
-            error.hidden = true;
-
-            // Whatever you assign here is what the QR code carries.
-            document.getElementById('result').textContent = shipId;
-        };
-    </script>
-</body>
+ </body>
 </html>

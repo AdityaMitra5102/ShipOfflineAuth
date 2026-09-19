@@ -44,7 +44,7 @@ def authenticate_complete():
 	response = request.json
 	print(json.dumps(response, indent=4))
 	presentation = response["presentation"]
-	authresp = response["authresp"]
+	authresp = response["assertion"]
 	verified_credential = verify_credential(presentation)
 	serialized_cred = verified_credential["credentialSubject"]["credential"]
 	ship_id = verified_credential["credentialSubject"]["ship"]

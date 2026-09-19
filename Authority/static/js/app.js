@@ -86,12 +86,6 @@
         if (e.key === 'Enter') e.preventDefault();
     });
 
-    // contenteditable="plaintext-only" is not in every browser. Where it is
-    // not honoured, fall back to ordinary editing - harmless here, because
-    // the payload is read with textContent, so pasted markup cannot corrupt it.
-    if (result.contentEditable !== 'plaintext-only') {
-        result.setAttribute('contenteditable', 'true');
-    }
 
     //-----------------------------------------------------------------
     // Printing
